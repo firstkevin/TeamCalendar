@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>팀 일정 대시보드</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .view-controls button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #ddd;
+            border: 1px solid #ddd;
+        }
+
+        .calendar-cell {
+            background-color: white;
+            min-height: 100px;
+            padding: 8px;
+        }
+
+        .calendar-cell.header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .event {
+            margin: 2px 0;
+            padding: 4px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            cursor: pointer;
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .add-event-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                font-size: 0.9em;
+            }
+
+            .calendar-cell {
+                min-height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="calendar-header">
+            <h1>팀 일정 대시보드</h1>
+            <div class="view-controls">
+                <button onclick="switchView('month')">월간</button>
+                <button onclick="switchView('week')">주간</button>
+                <button onclick="switchView('day')">일간</button>
+            </div>
+        </div>
+        <div class="calendar-grid">
+            <div class="calendar-cell header">일</div>
+            <div class="calendar-cell header">월</div>
+            <div class="calendar-cell header">화</div>
+            <div class="calendar-cell header">수</div>
+            <div class="calendar-cell header">목</div>
+            <div class="calendar-cell header">금</div>
+            <div class="calendar-cell header">토</div>
+        </div>
+    </div>
+
+    <button class="add-event-btn" onclick="showAddEventModal()">+</button>
+
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <h2>일정 추가</h2>
+            <form id="eventForm">
+                <input type="text" placeholder="일정 제목" required>
+                <input type="datetime-local" required>
+                <select>
+                    <option value="blue">파란색</option>
+                    <option value="green">초록색</option>
+                    <option value="red">빨간색</option>
+                </select>
+                <button type="submit">저장</button>
+                <button type="button" onclick="closeModal()">취소</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 캘린더 관리 클래스
+        class Calendar {
+            constructor() {
+                this.currentDate = new Date();
+                this.currentView = 'month';
+                this.events = this.loadEvents();
+                this.init();
+            }
+
+            init() {
+                this.renderCalendar();
+                this.setupEventListeners();
+            }
+
+            loadEvents() {
+                const savedEvents = localStorage.getItem('calendarEvents');
+                return savedEvents ? JSON.parse(savedEvents) : [];
+            }
+
+            saveEvents() {
+                localStorage.setItem('calendarEvents', JSON.stringify(this.events));
+            }
+
+            renderCalendar() {
+                // 캘린더 렌더링 로직
+            }
+
+            addEvent(event) {
+                this.events.push(event);
+                this.saveEvents();
+                this.renderCalendar();
+            }
+
+            updateEvent(id, updatedEvent) {
+                const index = this.events.findIndex(event => event.id === id);
+                if (index !== -1) {
+                    this.events[index] = updatedEvent;
+                    this.saveEvents();
+                    this.renderCalendar();
+                }
+            }
+
+            deleteEvent(id) {
+                this.events = this.events.filter(event => event.id !== id);
+                this.saveEvents();
+                this.renderCalendar();
+            }
+
+            setupEventListeners() {
+                // 이벤트 리스너 설정
+            }
+        }
+
+        // 전역 변수로 캘린더 인스턴스 생성
+        const calendar = new Calendar();
+
+        function switchView(view) {
+            calendar.currentView = view;
+            calendar.renderCalendar();
+        }
+
+        function showAddEventModal() {
+            document.getElementById('eventModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').style.display = 'none';
+        }
+
+        // 드래그 앤 드롭 기능
+        function enableDragAndDrop() {
+            const events = document.querySelectorAll('.event');
+            const cells = document.querySelectorAll('.calendar-cell:not(.header)');
+
+            events.forEach(event => {
+                event.draggable = true;
+                event.addEventListener('dragstart', handleDragStart);
+            });
+
+            cells.forEach(cell => {
+                cell.addEventListener('dragover', handleDragOver);
+                cell.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const eventId = e.dataTransfer.getData('text/plain');
+            // 이벤트 업데이트 로직
+        }
+    </script>
+</body>
+</html>
